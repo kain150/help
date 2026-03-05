@@ -5,9 +5,51 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cdbc2491-d2dc-4222-a286-6e6955c0d743" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/index.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/adminBot.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config/agencyBotConfig.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config/config.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config/extraServicesConfig.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config/modelsConfig.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/db.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/handlers/agency.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/handlers/agencySettings.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/handlers/clientFinance.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/handlers/clientProfile.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/handlers/community.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/handlers/feedback.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/handlers/info.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/handlers/inline.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/handlers/mainMenu.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/handlers/mentoring.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/handlers/messageHandler.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/handlers/primik.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/handlers/profile/profile.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/handlers/profile/registerHandlers.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/handlers/profile/registration.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/handlers/settings.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/handlers/start.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/untitledEDF/agencyConfig.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/untitledEDF/ss.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/userBot.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/userBotInstance.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT/.idea/jsLibraryMappings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT/.idea/untitledNFT.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT/package-lock.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/main.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/untitledEDF/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/untitledEDF/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/untitledEDF/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/untitledEDF/main.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/untitledEDF/package-lock.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/untitledEDF/package.json" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,7 +64,7 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/untitledEDF" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 7
@@ -38,7 +80,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;javascript.nodejs.core.library.configured.version&quot;: &quot;22.19.0&quot;,
     &quot;javascript.nodejs.core.library.typings.version&quot;: &quot;22.19.11&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
@@ -48,9 +90,18 @@
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Program Files\\JetBrains\\WebStorm 2025.2.1\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Acer\WebstormProjects\untitledHelper\config" />
+      <recent name="C:\Users\Acer\WebstormProjects\untitledHelper" />
+      <recent name="C:\Users\Acer\WebstormProjects\untitledHelper\node_modules" />
+      <recent name="C:\Users\Acer\WebstormProjects\untitledHelper\handlers\profile" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -68,6 +119,14 @@
       <workItem from="1771625091856" duration="1720000" />
       <workItem from="1771838200252" duration="4286000" />
       <workItem from="1771844280402" duration="207000" />
+      <workItem from="1771844918414" duration="6242000" />
+      <workItem from="1771866289467" duration="13687000" />
+      <workItem from="1771976011915" duration="596000" />
+      <workItem from="1772043469694" duration="6266000" />
+      <workItem from="1772102257169" duration="13839000" />
+      <workItem from="1772356930514" duration="1958000" />
+      <workItem from="1772471355009" duration="14487000" />
+      <workItem from="1772557345598" duration="26853000" />
     </task>
     <servers />
   </component>
