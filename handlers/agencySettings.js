@@ -4,7 +4,6 @@ const AGENCY_CONFIG = require('../config/agencyBotConfig');
 
 const AGENCY_SETTINGS_IMAGE_ID = AGENCY_CONFIG.IMAGES.AGENCY_SETTINGS;
 
-// Максимальная допустимая сумма для тарифа
 const MAX_TARIFF_PRICE = 100000;
 
 // Хранилище настроек отображения моделей для агентов
@@ -27,9 +26,8 @@ const modelContactEnabled = {};
 const customReviewsLink = {};
 const DEFAULT_REVIEWS_LINK = 'https://t.me/escotzovnik';
 
-/**
- * Отправка главного меню настроек агентства
- */
+// ========== Функции отправки меню ==========
+
 async function sendAgencySettingsMenu(bot, chatId, sessions) {
     const session = sessions.get(chatId) || {};
     const oldMessageId = session.lastMessageId;
@@ -61,9 +59,6 @@ async function sendAgencySettingsMenu(bot, chatId, sessions) {
     return sentMsg;
 }
 
-/**
- * Отправка меню настройки отображаемых моделей
- */
 async function sendDisplayedModelsMenu(bot, chatId, agentId, sessions) {
     const session = sessions.get(chatId) || {};
     const oldMessageId = session.lastMessageId;
@@ -108,9 +103,6 @@ async function sendDisplayedModelsMenu(bot, chatId, agentId, sessions) {
     return sentMsg;
 }
 
-/**
- * Отправка меню выбора языка для редактирования текста информации
- */
 async function sendInfoTextLanguageMenu(bot, chatId, sessions) {
     const session = sessions.get(chatId) || {};
     const oldMessageId = session.lastMessageId;
@@ -138,9 +130,6 @@ async function sendInfoTextLanguageMenu(bot, chatId, sessions) {
     return sentMsg;
 }
 
-/**
- * Отправка меню редактирования текста информации для выбранного языка
- */
 async function sendInfoTextEditMenu(bot, chatId, agentId, sessions, showDefaultButton = true) {
     const session = sessions.get(chatId) || {};
     const oldMessageId = session.lastMessageId;
@@ -173,9 +162,6 @@ ${currentText}
     return sentMsg;
 }
 
-/**
- * Отправка меню настройки максимального количества городов
- */
 async function sendMaxCitiesMenu(bot, chatId, agentId, sessions) {
     const session = sessions.get(chatId) || {};
     const oldMessageId = session.lastMessageId;
@@ -207,9 +193,6 @@ async function sendMaxCitiesMenu(bot, chatId, agentId, sessions) {
     return sentMsg;
 }
 
-/**
- * Отправка меню системы скидок
- */
 async function sendDiscountSystemMenu(bot, chatId, agentId, sessions) {
     const session = sessions.get(chatId) || {};
     const oldMessageId = session.lastMessageId;
@@ -254,9 +237,6 @@ async function sendDiscountSystemMenu(bot, chatId, agentId, sessions) {
     return sentMsg;
 }
 
-/**
- * Отправка меню запроса процента скидки
- */
 async function sendDiscountPercentRequest(bot, chatId, agentId, sessions) {
     const session = sessions.get(chatId) || {};
     const oldMessageId = session.lastMessageId;
@@ -281,9 +261,6 @@ async function sendDiscountPercentRequest(bot, chatId, agentId, sessions) {
     return sentMsg;
 }
 
-/**
- * Отправка меню выбора тарифов для скидки
- */
 async function sendDiscountTariffsMenu(bot, chatId, agentId, sessions) {
     const session = sessions.get(chatId) || {};
     const oldMessageId = session.lastMessageId;
@@ -322,9 +299,6 @@ async function sendDiscountTariffsMenu(bot, chatId, agentId, sessions) {
     return sentMsg;
 }
 
-/**
- * Отправка меню отзывов
- */
 async function sendReviewsMenu(bot, chatId, agentId, sessions) {
     const session = sessions.get(chatId) || {};
     const oldMessageId = session.lastMessageId;
@@ -369,9 +343,6 @@ async function sendReviewsMenu(bot, chatId, agentId, sessions) {
     return sentMsg;
 }
 
-/**
- * Отправка запроса новой ссылки на отзывы
- */
 async function sendReviewsLinkRequest(bot, chatId, agentId, sessions) {
     const session = sessions.get(chatId) || {};
     const oldMessageId = session.lastMessageId;
@@ -396,11 +367,70 @@ async function sendReviewsLinkRequest(bot, chatId, agentId, sessions) {
     return sentMsg;
 }
 
-// ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (БЕЗ ИЗМЕНЕНИЙ) ==========
+// ========== Вспомогательные функции для инлайн-запросов ==========
 
-/**
- * Обработка инлайн-запроса для выбора моделей
- */
+async function handleModelsInlineQuery(bot, inlineQueryId, queryText) {
+    try {
+        console.log(`📋 handleModelsInlineQuery вызван с query: "${queryText}"`);
+
+        let results = [];
+
+        if (queryText === 'agency_models' || queryText.startsWith('agency_models ')) {
+            const searchTerm = queryText.replace('agency_models', '').trim();
+
+            let query = {};
+            if (searchTerm) {
+                query = {
+                    $or: [
+                        { name: { $regex: searchTerm, $options: 'i' } },
+                        { city: { $regex: searchTerm, $options: 'i' } }
+                    ]
+                };
+            }
+
+            const allModels = await Model.find(query).limit(50);
+            console.log(`📊 Найдено моделей: ${allModels.length}`);
+
+            if (allModels.length === 0) {
+                results.push({
+                    type: 'article',
+                    id: 'no_models',
+                    title: 'Нет моделей',
+                    description: searchTerm ? `По запросу "${searchTerm}" ничего не найдено` : 'В базе данных пока нет моделей',
+                    input_message_content: {
+                        message_text: 'Модели отсутствуют.',
+                        parse_mode: 'HTML'
+                    }
+                });
+            } else {
+                for (const model of allModels) {
+                    const stars = '⭐️'.repeat(Math.floor(model.rating || 0));
+                    const title = `${stars} ${model.name}, ${model.age} лет`;
+                    const description = `${model.city} | 1ч: ${model.tariffs[1]}₽ | 2ч: ${model.tariffs[2]}₽ | 3ч: ${model.tariffs[3]}₽`;
+
+                    results.push({
+                        type: 'article',
+                        id: `edit_model_${model._id}`,
+                        title: title,
+                        description: description,
+                        thumb_url: model.photo,
+                        input_message_content: {
+                            message_text: `/edit_model_${model._id}`,
+                            parse_mode: 'HTML'
+                        }
+                    });
+                }
+            }
+        }
+
+        await bot.answerInlineQuery(inlineQueryId, results, { cache_time: 0, is_personal: true });
+        console.log('✅ Инлайн-запрос обработан');
+    } catch (error) {
+        console.error('❌ Ошибка в handleModelsInlineQuery:', error);
+        await bot.answerInlineQuery(inlineQueryId, [], { cache_time: 0, is_personal: true });
+    }
+}
+
 async function handleSelectModelsInlineQuery(bot, inlineQueryId, queryText, agentId) {
     try {
         console.log(`📋 handleSelectModelsInlineQuery вызван с query: "${queryText}" для агента ${agentId}`);
@@ -468,9 +498,8 @@ async function handleSelectModelsInlineQuery(bot, inlineQueryId, queryText, agen
     }
 }
 
-/**
- * Отправка анкеты модели для редактирования
- */
+// ========== Функции для работы с моделью ==========
+
 async function sendModelForEdit(bot, chatId, model, session, sessions) {
     const oldMessageId = session.lastMessageId;
 
@@ -510,9 +539,6 @@ async function sendModelForEdit(bot, chatId, model, session, sessions) {
     return sentMsg;
 }
 
-/**
- * Отправка списка тарифов для выбора редактирования (с фото модели)
- */
 async function sendTariffList(bot, chatId, model, session, sessions) {
     console.log(`📋 sendTariffList для модели: ${model.name}`);
     const oldMessageId = session.lastMessageId;
@@ -538,9 +564,6 @@ async function sendTariffList(bot, chatId, model, session, sessions) {
     return sentMsg;
 }
 
-/**
- * Запрос новой цены для тарифа (с фото модели)
- */
 async function askNewTariffPrice(bot, chatId, model, hours, session, sessions) {
     console.log(`💰 askNewTariffPrice для модели ${model.name}, час ${hours}`);
     const oldMessageId = session.lastMessageId;
@@ -563,9 +586,6 @@ async function askNewTariffPrice(bot, chatId, model, hours, session, sessions) {
     return sentMsg;
 }
 
-/**
- * Обработка ввода новой цены для тарифа
- */
 async function handleTariffPriceInput(bot, msg, session, sessions) {
     const chatId = msg.chat.id;
     const text = msg.text.trim();
@@ -626,70 +646,7 @@ async function handleTariffPriceInput(bot, msg, session, sessions) {
     return newPrice;
 }
 
-/**
- * Обработка инлайн-запроса для анкет моделей
- */
-async function handleModelsInlineQuery(bot, inlineQueryId, queryText) {
-    try {
-        console.log(`📋 handleModelsInlineQuery вызван с query: "${queryText}"`);
-
-        let results = [];
-
-        if (queryText === 'agency_models' || queryText.startsWith('agency_models ')) {
-            const searchTerm = queryText.replace('agency_models', '').trim();
-
-            let query = {};
-            if (searchTerm) {
-                query = {
-                    $or: [
-                        { name: { $regex: searchTerm, $options: 'i' } },
-                        { city: { $regex: searchTerm, $options: 'i' } }
-                    ]
-                };
-            }
-
-            const allModels = await Model.find(query).limit(50);
-            console.log(`📊 Найдено моделей: ${allModels.length}`);
-
-            if (allModels.length === 0) {
-                results.push({
-                    type: 'article',
-                    id: 'no_models',
-                    title: 'Нет моделей',
-                    description: searchTerm ? `По запросу "${searchTerm}" ничего не найдено` : 'В базе данных пока нет моделей',
-                    input_message_content: {
-                        message_text: 'Модели отсутствуют.',
-                        parse_mode: 'HTML'
-                    }
-                });
-            } else {
-                for (const model of allModels) {
-                    const stars = '⭐️'.repeat(Math.floor(model.rating || 0));
-                    const title = `${stars} ${model.name}, ${model.age} лет`;
-                    const description = `${model.city} | 1ч: ${model.tariffs[1]}₽ | 2ч: ${model.tariffs[2]}₽ | 3ч: ${model.tariffs[3]}₽`;
-
-                    results.push({
-                        type: 'article',
-                        id: `edit_model_${model._id}`,
-                        title: title,
-                        description: description,
-                        thumb_url: model.photo,
-                        input_message_content: {
-                            message_text: `/edit_model_${model._id}`,
-                            parse_mode: 'HTML'
-                        }
-                    });
-                }
-            }
-        }
-
-        await bot.answerInlineQuery(inlineQueryId, results, { cache_time: 0, is_personal: true });
-        console.log('✅ Инлайн-запрос обработан');
-    } catch (error) {
-        console.error('❌ Ошибка в handleModelsInlineQuery:', error);
-        await bot.answerInlineQuery(inlineQueryId, [], { cache_time: 0, is_personal: true });
-    }
-}
+// ========== Экспорт ==========
 
 module.exports = {
     sendAgencySettingsMenu,

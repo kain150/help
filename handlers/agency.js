@@ -31,7 +31,7 @@ const AGENCY_IMAGE_ID = 'AgACAgIAAxkBAAMcaaXIAAG2flJ8oVdVR_zI4vpQDqJWAAIVEmsb15k
 
 async function sendAgencyMainMenu(bot, chatId, agentId, sessions) {
     const session = sessions.get(chatId) || {};
-    const oldMessageId = session.lastMessageId; // запоминаем предыдущее сообщение
+    const oldMessageId = session.lastMessageId;
 
     const clientsCount = await AgencyClient.countDocuments({ invitedBy: agentId });
 
@@ -56,13 +56,12 @@ async function sendAgencyMainMenu(bot, chatId, agentId, sessions) {
 
     const sentMsg = await utils.sendPhotoWithKeyboard(bot, chatId, AGENCY_IMAGE_ID, text, keyboard);
 
-    // Удаляем предыдущее сообщение, если оно есть
     if (oldMessageId) {
         await utils.deleteMessageSafe(bot, chatId, oldMessageId);
     }
 
-    session.lastMessageId = sentMsg.message_id; // обновляем единое поле lastMessageId
-    session.agencyMenuId = sentMsg.message_id;  // для совместимости
+    session.lastMessageId = sentMsg.message_id;
+    session.agencyMenuId = sentMsg.message_id;
     sessions.set(chatId, session);
     return sentMsg;
 }
@@ -174,7 +173,7 @@ function setupInlineHandlers(bot, sessions) {
 }
 
 function setupMessageHandlers(bot, sessions) {
-    // Обработка команды начала привязки
+    // Команда /attach_client
     bot.onText(/\/attach_client/, async (msg) => {
         const chatId = msg.chat.id;
         const session = sessions.get(chatId) || {};
@@ -183,6 +182,7 @@ function setupMessageHandlers(bot, sessions) {
         await bot.sendMessage(chatId, '✏️ Введите ID или username клиента:');
     });
 
+    // Команда /mybots
     bot.onText(/\/mybots/, async (msg) => {
         const chatId = msg.chat.id;
         const userId = msg.from.id;
@@ -195,6 +195,7 @@ function setupMessageHandlers(bot, sessions) {
         await sendAgencyMainMenu(bot, chatId, userId, sessions);
     });
 
+    // Команда /edit_model_123
     bot.onText(/\/edit_model_(.+)/, async (msg, match) => {
         const chatId = msg.chat.id;
         const modelId = match[1];
@@ -210,6 +211,7 @@ function setupMessageHandlers(bot, sessions) {
         await sendModelForEdit(bot, chatId, model, session, sessions);
     });
 
+    // Команда /select_model_123
     bot.onText(/\/select_model_(.+)/, async (msg, match) => {
         const chatId = msg.chat.id;
         const modelId = match[1];
@@ -249,19 +251,33 @@ function setupMessageHandlers(bot, sessions) {
         }, 1500);
     });
 
-    // Обработка всех входящих сообщений
+    // Команда /client_profile_123
+    bot.onText(/\/client_profile_(\d+)/, async (msg, match) => {
+        const chatId = msg.chat.id;
+        const clientId = parseInt(match[1]);
+        await bot.sendMessage(chatId, `Профиль клиента ${clientId} (в разработке)`);
+    });
+
+    // ====== ГЛАВНЫЙ ОБРАБОТЧИК ТЕКСТОВЫХ СООБЩЕНИЙ ======
     bot.on('message', async (msg) => {
+        // Пропускаем команды
         if (!msg.text || msg.text.startsWith('/')) return;
 
         const chatId = msg.chat.id;
         const text = msg.text.trim();
         const agentId = msg.from.id;
-
         const session = sessions.get(chatId);
 
-        // ===== РЕДАКТИРОВАНИЕ ТАРИФА =====
-        if (session && session.editTariff) {
-            console.log('🔍 Обнаружено редактирование тарифа');
+        if (!session) {
+            console.log(`📝 Нет сессии для чата ${chatId}`);
+            return;
+        }
+
+        console.log(`📝 Получено сообщение в состоянии: ${session.state || 'нет состояния'}`);
+
+        // ====== РЕДАКТИРОВАНИЕ ТАРИФА ======
+        if (session.editTariff) {
+            console.log('🔍 Редактирование тарифа');
             const newPrice = await handleTariffPriceInput(bot, msg, session, sessions);
 
             if (newPrice === false) return;
@@ -296,9 +312,9 @@ function setupMessageHandlers(bot, sessions) {
             return;
         }
 
-        // ===== РЕДАКТИРОВАНИЕ ТЕКСТА ИНФОРМАЦИИ =====
-        if (session && session.state === 'awaiting_info_text') {
-            console.log('📝 Получен новый текст информации');
+        // ====== ОЖИДАНИЕ ТЕКСТА ИНФОРМАЦИИ ======
+        if (session.state === 'awaiting_info_text') {
+            console.log('📝 Получен новый текст информации:', text);
 
             if (text.length > 512) {
                 const errorMsg = await bot.sendMessage(chatId, '❌ Текст слишком длинный. Максимум 512 символов.');
@@ -306,7 +322,9 @@ function setupMessageHandlers(bot, sessions) {
                 return;
             }
 
+            // СОХРАНЯЕМ ТЕКСТ В ГЛОБАЛЬНЫЙ ОБЪЕКТ
             customInfoTexts[agentId] = text;
+            console.log(`[agency] info text saved for ${agentId}:`, text);
 
             const confirmMsg = await bot.sendMessage(chatId, '✅ Текст сохранён');
             setTimeout(() => bot.deleteMessage(chatId, confirmMsg.message_id).catch(() => {}), 1500);
@@ -317,8 +335,8 @@ function setupMessageHandlers(bot, sessions) {
             return;
         }
 
-        // ===== РЕДАКТИРОВАНИЕ МАКСИМАЛЬНОГО КОЛИЧЕСТВА ГОРОДОВ =====
-        if (session && session.state === 'awaiting_max_cities') {
+        // ====== ОЖИДАНИЕ МАКСИМАЛЬНОГО КОЛИЧЕСТВА ГОРОДОВ ======
+        if (session.state === 'awaiting_max_cities') {
             console.log('🏙️ Получено новое количество городов');
 
             const numericRegex = /^\d+$/;
@@ -336,6 +354,7 @@ function setupMessageHandlers(bot, sessions) {
             }
 
             maxCitiesSettings[agentId] = newMax;
+            console.log(`[agency] max cities saved for ${agentId}: ${newMax}`);
 
             const confirmMsg = await bot.sendMessage(chatId, `✅ Максимальное количество городов изменено на ${newMax}`);
             setTimeout(() => bot.deleteMessage(chatId, confirmMsg.message_id).catch(() => {}), 1500);
@@ -346,8 +365,8 @@ function setupMessageHandlers(bot, sessions) {
             return;
         }
 
-        // ===== РЕДАКТИРОВАНИЕ ПРОЦЕНТА СКИДКИ =====
-        if (session && session.state === 'awaiting_discount_percent') {
+        // ====== ОЖИДАНИЕ ПРОЦЕНТА СКИДКИ ======
+        if (session.state === 'awaiting_discount_percent') {
             console.log('💰 Получен процент скидки');
 
             const numericRegex = /^\d+$/;
@@ -364,12 +383,22 @@ function setupMessageHandlers(bot, sessions) {
                 return;
             }
 
+            // При включении скидки автоматически включаем все тарифы
             if (!discountSettings[agentId]) {
-                discountSettings[agentId] = { enabled: true, percent, tariffs: {} };
+                discountSettings[agentId] = {
+                    enabled: true,
+                    percent,
+                    tariffs: { '1': true, '2': true, '3': true, 'night': true, 'day': true }
+                };
             } else {
                 discountSettings[agentId].enabled = true;
                 discountSettings[agentId].percent = percent;
+                // Если тарифы не были заданы, включаем все
+                if (!discountSettings[agentId].tariffs || Object.keys(discountSettings[agentId].tariffs).length === 0) {
+                    discountSettings[agentId].tariffs = { '1': true, '2': true, '3': true, 'night': true, 'day': true };
+                }
             }
+            console.log(`[agency] discount percent saved for ${agentId}:`, discountSettings[agentId]);
 
             const confirmMsg = await bot.sendMessage(chatId, `✅ Процент скидки установлен: ${percent}%`);
             setTimeout(() => bot.deleteMessage(chatId, confirmMsg.message_id).catch(() => {}), 1500);
@@ -380,8 +409,8 @@ function setupMessageHandlers(bot, sessions) {
             return;
         }
 
-        // ===== РЕДАКТИРОВАНИЕ ССЫЛКИ НА ОТЗЫВЫ =====
-        if (session && session.state === 'awaiting_reviews_link') {
+        // ====== ОЖИДАНИЕ ССЫЛКИ НА ОТЗЫВЫ ======
+        if (session.state === 'awaiting_reviews_link') {
             console.log('🔗 Получена новая ссылка на отзывы');
 
             if (!text.match(/^(https?:\/\/|t\.me\/)/i)) {
@@ -391,6 +420,7 @@ function setupMessageHandlers(bot, sessions) {
             }
 
             customReviewsLink[agentId] = text;
+            console.log(`[agency] reviews link saved for ${agentId}: ${text}`);
 
             const confirmMsg = await bot.sendMessage(chatId, '✅ Ссылка сохранена');
             setTimeout(() => bot.deleteMessage(chatId, confirmMsg.message_id).catch(() => {}), 1500);
@@ -401,85 +431,90 @@ function setupMessageHandlers(bot, sessions) {
             return;
         }
 
-        // ===== ПРИВЯЗКА КЛИЕНТА =====
-        if (!session || session.state !== 'awaiting_client_attach') {
-            return;
-        }
+// ====== ОЖИДАНИЕ ID КЛИЕНТА ДЛЯ ПРИВЯЗКИ ======
+        if (session.state === 'awaiting_client_attach') {
+            await bot.deleteMessage(chatId, msg.message_id).catch(() => {});
 
-        await bot.deleteMessage(chatId, msg.message_id).catch(() => {});
+            const input = text.trim();
 
-        const input = text;
-        let client = null;
-        let userData = null;
-
-        if (!isNaN(input) && Number.isInteger(parseInt(input))) {
-            client = await AgencyClient.findOne({ userId: parseInt(input) });
-            userData = await User.findOne({ telegramId: parseInt(input) });
-        } else {
-            const username = input.replace('@', '');
-            client = await AgencyClient.findOne({ username: username });
-            userData = await User.findOne({ username: username });
-        }
-
-        if (!client) {
-            if (userData) {
-                client = new AgencyClient({
-                    userId: userData.telegramId,
-                    username: userData.username,
-                    firstName: userData.firstName,
-                    lastName: userData.lastName,
-                    city: userData.city || 'Не указан',
-                    invitedBy: agentId,
-                });
-                await client.save();
-            } else {
-                client = new AgencyClient({
-                    userId: parseInt(input),
-                    username: null,
-                    firstName: null,
-                    lastName: null,
-                    city: 'Не указан',
-                    invitedBy: agentId,
-                });
-                await client.save();
-            }
-        } else {
-            if (client.invitedBy) {
-                if (client.invitedBy === agentId) {
-                    await bot.sendMessage(chatId, '⚠️ Этот клиент уже привязан к вам.');
-                } else {
-                    await bot.sendMessage(chatId, '⚠️ Этот клиент уже привязан к другому воркеру.');
-                }
-                session.state = null;
-                sessions.set(chatId, session);
+            // Проверяем, что ввели число
+            if (!/^\d+$/.test(input)) {
+                await bot.sendMessage(chatId, '❌ Введите корректный ID клиента (только цифры)');
                 return;
             }
-            client.invitedBy = agentId;
-            if (userData) {
-                client.username = userData.username || client.username;
-                client.firstName = userData.firstName || client.firstName;
-                client.lastName = userData.lastName || client.lastName;
-                client.city = userData.city || client.city;
+
+            const userId = parseInt(input);
+
+            // Проверяем, что получили валидное число
+            if (isNaN(userId)) {
+                await bot.sendMessage(chatId, '❌ Некорректный ID');
+                return;
             }
-            await client.save();
+
+            let client = await AgencyClient.findOne({ userId: userId });
+            let userData = await User.findOne({ telegramId: userId });
+
+            if (!client) {
+                if (userData) {
+                    client = new AgencyClient({
+                        userId: userData.telegramId,
+                        username: userData.username,
+                        firstName: userData.firstName,
+                        lastName: userData.lastName,
+                        city: userData.city || 'Не указан',
+                        invitedBy: agentId,
+                    });
+                    await client.save();
+                } else {
+                    client = new AgencyClient({
+                        userId: userId,
+                        username: null,
+                        firstName: null,
+                        lastName: null,
+                        city: 'Не указан',
+                        invitedBy: agentId,
+                    });
+                    await client.save();
+                }
+            } else {
+                if (client.invitedBy) {
+                    if (client.invitedBy === agentId) {
+                        await bot.sendMessage(chatId, '⚠️ Этот клиент уже привязан к вам.');
+                    } else {
+                        await bot.sendMessage(chatId, '⚠️ Этот клиент уже привязан к другому воркеру.');
+                    }
+                    session.state = null;
+                    sessions.set(chatId, session);
+                    return;
+                }
+                client.invitedBy = agentId;
+                if (userData) {
+                    client.username = userData.username || client.username;
+                    client.firstName = userData.firstName || client.firstName;
+                    client.lastName = userData.lastName || client.lastName;
+                    client.city = userData.city || client.city;
+                }
+                await client.save();
+            }
+
+            const botUsername = bot.options.username;
+            const profileLink = `tg://resolve?domain=${botUsername}&start=binding_${client.userId}`;
+            const contactLink = client.username ? `https://t.me/${client.username}` : `tg://user?id=${client.userId}`;
+            const displayName = client.customName || client.firstName || 'Без имени';
+
+            const message = `💝 SkyGirls\n\n` +
+                `Клиент: <a href="${profileLink}">${displayName}</a>\n` +
+                `ID: ${client.userId} <a href="${contactLink}">Контакт</a>\n` +
+                `Город: ${client.city || 'Не указан'}\n\n` +
+                `✅ Новая привязка.`;
+
+            const sentMsg = await bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
+
+            session.lastAgencyNotificationId = sentMsg.message_id;
+            session.state = null;
+            sessions.set(chatId, session);
+            return;
         }
-
-        const botUsername = bot.options.username;
-        const profileLink = `tg://resolve?domain=${botUsername}&start=binding_${client.userId}`;
-        const contactLink = client.username ? `https://t.me/${client.username}` : `tg://user?id=${client.userId}`;
-        const displayName = client.customName || client.firstName || 'Без имени';
-
-        const message = `💝 SkyGirls\n\n` +
-            `Клиент: <a href="${profileLink}">${displayName}</a>\n` +
-            `ID: ${client.userId} <a href="${contactLink}">Контакт</a>\n` +
-            `Город: ${client.city || 'Не указан'}\n\n` +
-            `✅ Новая привязка.`;
-
-        const sentMsg = await bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
-
-        session.lastAgencyNotificationId = sentMsg.message_id;
-        session.state = null;
-        sessions.set(chatId, session);
     });
 }
 
@@ -494,12 +529,11 @@ function setupCallbackHandlers(bot, sessions) {
 
         await bot.answerCallbackQuery(query.id).catch(() => {});
 
-        // Сначала удаляем текущее сообщение (кнопки)
+        // Сначала удаляем текущее сообщение
         await utils.deleteMessageSafe(bot, chatId, messageId);
 
-        // Затем обрабатываем навигацию
         if (data === 'agency_cancel_attach') {
-            // уже удалили, ничего не делаем
+            // ничего не делаем
         } else if (data === 'agency_settings') {
             await sendAgencySettingsMenu(bot, chatId, sessions);
         } else if (data === 'agency_back_to_main') {
@@ -525,10 +559,14 @@ function setupCallbackHandlers(bot, sessions) {
             await sendInfoTextLanguageMenu(bot, chatId, sessions);
         } else if (data === 'info_text_lang_ru') {
             const userId = query.from.id;
+            // ВАЖНО: Устанавливаем состояние перед отправкой меню
+            session.state = 'awaiting_info_text';
+            sessions.set(chatId, session);
             await sendInfoTextEditMenu(bot, chatId, userId, sessions, true);
         } else if (data === 'info_text_reset') {
             const userId = query.from.id;
             delete customInfoTexts[userId];
+            console.log(`[agency] info text reset for ${userId}`);
             await sendInfoTextEditMenu(bot, chatId, userId, sessions, true);
         } else if (data === 'agency_max_cities') {
             const userId = query.from.id;
@@ -538,6 +576,7 @@ function setupCallbackHandlers(bot, sessions) {
         } else if (data === 'max_cities_reset') {
             const userId = query.from.id;
             delete maxCitiesSettings[userId];
+            console.log(`[agency] max cities reset for ${userId}`);
             await sendMaxCitiesMenu(bot, chatId, userId, sessions);
         } else if (data === 'agency_discount_system') {
             const userId = query.from.id;
@@ -558,6 +597,7 @@ function setupCallbackHandlers(bot, sessions) {
         } else if (data === 'discount_disable') {
             const userId = query.from.id;
             delete discountSettings[userId];
+            console.log(`[agency] discount disabled for ${userId}`);
             await sendDiscountSystemMenu(bot, chatId, userId, sessions);
         } else if (data.startsWith('discount_tariff_')) {
             const tariff = data.replace('discount_tariff_', '');
@@ -566,11 +606,13 @@ function setupCallbackHandlers(bot, sessions) {
                 discountSettings[userId] = { enabled: true, percent: 0, tariffs: {} };
             }
             discountSettings[userId].tariffs[tariff] = !discountSettings[userId].tariffs[tariff];
+            console.log(`[agency] discount tariff toggled for ${userId}:`, discountSettings[userId].tariffs);
             await sendDiscountTariffsMenu(bot, chatId, userId, sessions);
         } else if (data === 'agency_model_contact_toggle') {
             const userId = query.from.id;
             const current = modelContactEnabled[userId] !== undefined ? modelContactEnabled[userId] : true;
             modelContactEnabled[userId] = !current;
+            console.log(`[agency] model contact toggled for ${userId}: ${modelContactEnabled[userId]}`);
             await sendAgencySettingsMenu(bot, chatId, sessions);
         } else if (data === 'agency_reviews') {
             const userId = query.from.id;
@@ -583,10 +625,12 @@ function setupCallbackHandlers(bot, sessions) {
         } else if (data === 'reviews_remove') {
             const userId = query.from.id;
             customReviewsLink[userId] = null;
+            console.log(`[agency] reviews link removed for ${userId}`);
             await sendReviewsMenu(bot, chatId, userId, sessions);
         } else if (data === 'reviews_default') {
             const userId = query.from.id;
             delete customReviewsLink[userId];
+            console.log(`[agency] reviews link reset to default for ${userId}`);
             await sendReviewsMenu(bot, chatId, userId, sessions);
         } else if (data.startsWith('edit_tariffs_')) {
             const modelId = data.replace('edit_tariffs_', '');

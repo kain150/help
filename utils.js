@@ -2,12 +2,33 @@ const { User, Counter } = require('./db');
 
 async function isSubscribed(bot, userId) {
     try {
-        const chatMember = await bot.getChatMember(process.env.CHANNEL_USERNAME || '@ddsoetest', userId);
+        const channelUsername = process.env.CHANNEL_USERNAME || '@ddsoetest';
+
+        // Проверяем, существует ли канал
+        const chat = await bot.getChat(channelUsername).catch(() => null);
+        if (!chat) {
+            console.log('⚠️ Канал не найден, пропускаем проверку подписки');
+            return true;
+        }
+
+        // Пробуем получить информацию о пользователе в канале
+        const chatMember = await bot.getChatMember(channelUsername, userId);
         const status = chatMember.status;
         return ['member', 'administrator', 'creator'].includes(status);
     } catch (error) {
-        console.error('Ошибка проверки подписки:', error);
-        return false;
+        console.error('Ошибка проверки подписки:', error.message);
+
+        // Если ошибка связана с недоступностью списка участников, пропускаем проверку
+        if (error.code === 'ETELEGRAM' &&
+            (error.response?.body?.description?.includes('member list is inaccessible') ||
+                error.message?.includes('member list is inaccessible'))) {
+            console.log('⚠️ Список участников канала недоступен, пропускаем проверку');
+            return true;
+        }
+
+        // В случае любой другой ошибки тоже пропускаем, чтобы не блокировать пользователей
+        console.log('⚠️ Не удалось проверить подписку, пропускаем проверку');
+        return true;
     }
 }
 

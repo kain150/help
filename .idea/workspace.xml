@@ -5,36 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cdbc2491-d2dc-4222-a286-6e6955c0d743" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/adminBot.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/agencyBotConfig.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/config.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/extraServicesConfig.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/modelsConfig.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/db.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handlers/agency.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handlers/agencySettings.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handlers/clientFinance.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handlers/clientProfile.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handlers/community.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handlers/feedback.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handlers/info.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handlers/inline.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handlers/mainMenu.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handlers/mentoring.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handlers/messageHandler.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handlers/primik.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handlers/profile/profile.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handlers/profile/registerHandlers.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handlers/profile/registration.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handlers/settings.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handlers/start.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/untitledEDF/agencyConfig.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/untitledEDF/ss.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/userBot.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/userBotInstance.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT" beforeDir="false" afterPath="$PROJECT_DIR$/NFT" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/NFT/.idea/.gitignore" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/NFT/.idea/jsLibraryMappings.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/NFT/.idea/modules.xml" beforeDir="false" />
@@ -42,14 +14,16 @@
       <change beforePath="$PROJECT_DIR$/NFT/.idea/vcs.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/NFT/package-lock.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/NFT/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/main.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/config.js" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db.js" beforeDir="false" afterPath="$PROJECT_DIR$/db.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/handlers/agency.js" beforeDir="false" afterPath="$PROJECT_DIR$/handlers/agency.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/handlers/agencySettings.js" beforeDir="false" afterPath="$PROJECT_DIR$/handlers/agencySettings.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/handlers/profile/registration.js" beforeDir="false" afterPath="$PROJECT_DIR$/handlers/profile/registration.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/handlers/settings.js" beforeDir="false" afterPath="$PROJECT_DIR$/handlers/settings.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/untitledEDF" beforeDir="false" afterPath="$PROJECT_DIR$/untitledEDF" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/untitledEDF/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/untitledEDF/index.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/untitledEDF/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/untitledEDF/main.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/untitledEDF/package-lock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/untitledEDF/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils.js" beforeDir="false" afterPath="$PROJECT_DIR$/utils.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,7 +38,7 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/untitledEDF" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 7
@@ -126,7 +100,10 @@
       <workItem from="1772102257169" duration="13839000" />
       <workItem from="1772356930514" duration="1958000" />
       <workItem from="1772471355009" duration="14487000" />
-      <workItem from="1772557345598" duration="26853000" />
+      <workItem from="1772557345598" duration="28085000" />
+      <workItem from="1772828289775" duration="5107000" />
+      <workItem from="1773032720434" duration="1468000" />
+      <workItem from="1773034563655" duration="14933000" />
     </task>
     <servers />
   </component>

@@ -7,7 +7,7 @@ module.exports = {
     BOT_USERNAME: 'helpertest54949493bot',
 
     // Канал для подписки
-    CHANNEL_USERNAME: '@ddsoetest',
+    CHANNEL_USERNAME: '@sskjksd',
 
     // ID изображений (можно вынести сюда)
     IMAGES: {

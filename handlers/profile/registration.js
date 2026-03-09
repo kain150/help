@@ -16,14 +16,24 @@ async function handleRegistrationMessage(bot, msg, user, session, sessions) {
         }
         const questionText = 'Для регистрации вам нужно заполнить анкету ниже.\n\nКакой у вас опыт работы?';
         const keyboard = [[{ text: 'Назад', callback_data: 'back_to_start' }]];
-        const sentMsg = await utils.sendNewAndDeleteOld(bot, chatId, config.IMAGES.SURVEY, questionText, keyboard, session.lastMessageId);
+
+        if (session.lastMessageId) {
+            await utils.deleteMessageSafe(bot, chatId, session.lastMessageId);
+        }
+
+        const sentMsg = await utils.sendPhotoWithKeyboard(bot, chatId, config.IMAGES.SURVEY, questionText, keyboard);
         sessions.set(chatId, { ...session, state: 'experience', lastMessageId: sentMsg.message_id });
     }
     else if (session.state === 'experience') {
         session.experience = text;
         const newText = `Для регистрации вам нужно заполнить анкету ниже.\n\nОпыт работы: ${text}\nОткуда вы узнали о нас?`;
         const keyboard = [[{ text: 'Изменить опыт работы', callback_data: 'change_experience' }]];
-        const sentMsg = await utils.sendNewAndDeleteOld(bot, chatId, config.IMAGES.SURVEY, newText, keyboard, session.lastMessageId);
+
+        if (session.lastMessageId) {
+            await utils.deleteMessageSafe(bot, chatId, session.lastMessageId);
+        }
+
+        const sentMsg = await utils.sendPhotoWithKeyboard(bot, chatId, config.IMAGES.SURVEY, newText, keyboard);
         sessions.set(chatId, { ...session, state: 'source', lastMessageId: sentMsg.message_id });
     }
     else if (session.state === 'source') {
@@ -33,7 +43,12 @@ async function handleRegistrationMessage(bot, msg, user, session, sessions) {
             [{ text: 'Отправить заявку', callback_data: 'submit_application' }],
             [{ text: 'Изменить источник', callback_data: 'change_source' }]
         ];
-        const sentMsg = await utils.sendNewAndDeleteOld(bot, chatId, config.IMAGES.SURVEY, finalPreview, keyboard, session.lastMessageId);
+
+        if (session.lastMessageId) {
+            await utils.deleteMessageSafe(bot, chatId, session.lastMessageId);
+        }
+
+        const sentMsg = await utils.sendPhotoWithKeyboard(bot, chatId, config.IMAGES.SURVEY, finalPreview, keyboard);
         sessions.set(chatId, { ...session, state: 'preview', lastMessageId: sentMsg.message_id });
     }
 }
@@ -46,6 +61,7 @@ const registrationCallbacks = (bot, sessions) => {
         const messageId = query.message.message_id;
         const data = query.data;
 
+        // СНАЧАЛА отвечаем на callback
         await bot.answerCallbackQuery(query.id).catch(() => {});
 
         const session = sessions.get(chatId);
@@ -57,15 +73,17 @@ const registrationCallbacks = (bot, sessions) => {
         if (data === 'continue') {
             const subscribed = await utils.isSubscribed(bot, userId);
             if (!subscribed) {
-                await bot.answerCallbackQuery(query.id, {
-                    text: 'Для продолжения регистрации подпишитесь на канал.',
-                    show_alert: true
-                }).catch(() => {});
+                await bot.sendMessage(chatId, '❌ Для продолжения регистрации подпишитесь на канал.');
                 return;
             }
             const captchaText = 'Перед заполнением анкеты, пожалуйста, введите текст с изображения.';
             const captchaKeyboard = [[{ text: 'Назад', callback_data: 'back_to_start' }]];
-            const sentMsg = await utils.sendNewAndDeleteOld(bot, chatId, config.IMAGES.CAPTCHA, captchaText, captchaKeyboard, session.lastMessageId);
+
+            if (session.lastMessageId) {
+                await utils.deleteMessageSafe(bot, chatId, session.lastMessageId);
+            }
+
+            const sentMsg = await utils.sendPhotoWithKeyboard(bot, chatId, config.IMAGES.CAPTCHA, captchaText, captchaKeyboard);
             sessions.set(chatId, { ...session, state: 'captcha', lastMessageId: sentMsg.message_id });
         }
         else if (data === 'back_to_start') {
@@ -75,13 +93,19 @@ const registrationCallbacks = (bot, sessions) => {
         else if (data === 'change_experience') {
             const newText = 'Для регистрации вам нужно заполнить анкету ниже.\n\nКакой у вас опыт работы?';
             const keyboard = [[{ text: 'Назад', callback_data: 'back_to_start' }]];
-            const sentMsg = await utils.sendNewAndDeleteOld(bot, chatId, config.IMAGES.SURVEY, newText, keyboard, messageId);
+
+            await utils.deleteMessageSafe(bot, chatId, messageId);
+
+            const sentMsg = await utils.sendPhotoWithKeyboard(bot, chatId, config.IMAGES.SURVEY, newText, keyboard);
             sessions.set(chatId, { ...session, state: 'experience', experience: null, lastMessageId: sentMsg.message_id });
         }
         else if (data === 'change_source') {
             const newText = `Для регистрации вам нужно заполнить анкету ниже.\n\nОпыт работы: ${session.experience}\nОткуда вы узнали о нас?`;
             const keyboard = [[{ text: 'Изменить опыт работы', callback_data: 'change_experience' }]];
-            const sentMsg = await utils.sendNewAndDeleteOld(bot, chatId, config.IMAGES.SURVEY, newText, keyboard, messageId);
+
+            await utils.deleteMessageSafe(bot, chatId, messageId);
+
+            const sentMsg = await utils.sendPhotoWithKeyboard(bot, chatId, config.IMAGES.SURVEY, newText, keyboard);
             sessions.set(chatId, { ...session, state: 'source', source: null, lastMessageId: sentMsg.message_id });
         }
         else if (data === 'submit_application') {
@@ -102,7 +126,10 @@ const registrationCallbacks = (bot, sessions) => {
             }
 
             const finalText = 'Ваша заявка отправлена на рассмотрение. Ожидайте решения.';
-            const sentMsg = await utils.sendNewAndDeleteOld(bot, chatId, config.IMAGES.SURVEY, finalText, [], messageId);
+
+            await utils.deleteMessageSafe(bot, chatId, messageId);
+
+            const sentMsg = await utils.sendPhotoWithKeyboard(bot, chatId, config.IMAGES.SURVEY, finalText, []);
             sessions.set(chatId, { ...session, state: 'finished', lastMessageId: sentMsg.message_id });
         }
     });

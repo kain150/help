@@ -1,5 +1,4 @@
 const utils = require('../utils');
-const config = require('../config/config');
 
 const SETTINGS_IMAGE_ID = 'AgACAgIAAxkBAAMSaaXGkgXxUWn4J4ddtp5mgCZPlvoAAgcSaxvXmTFJrVcxobK4QkUBAAMCAAN5AAM6BA';
 
@@ -22,7 +21,7 @@ async function sendSettingsMenu(bot, chatId, user, oldMessageId = null, sessions
 }
 
 module.exports = (bot, sessions) => {
-    // 🔥 НОВЫЙ ОБРАБОТЧИК КОМАНДЫ /settings
+    // Команда /settings
     bot.onText(/\/settings/, async (msg) => {
         const chatId = msg.chat.id;
         const userId = msg.from.id;
@@ -38,8 +37,15 @@ module.exports = (bot, sessions) => {
         sessions.set(chatId, { ...session, lastMessageId: sentMsg.message_id });
     });
 
-    // Существующий обработчик callback'ов
+    // Обработчик callback'ов
     bot.on('callback_query', async (query) => {
+        // Проверяем, что query и query.message существуют
+        if (!query || !query.message) {
+            console.log('⚠️ Получен callback без message');
+            await bot.answerCallbackQuery(query.id).catch(() => {});
+            return;
+        }
+
         const chatId = query.message.chat.id;
         const userId = query.from.id;
         const messageId = query.message.message_id;
@@ -53,6 +59,7 @@ module.exports = (bot, sessions) => {
             'settings_toggle_report',
             'back_to_settings'
         ];
+
         if (!settingsCallbacks.includes(data)) return;
 
         await bot.answerCallbackQuery(query.id).catch(() => {});

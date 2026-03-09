@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema({
     level: { type: Number, default: 1 },
     profitCount: { type: Number, default: 0 },
     payoutCount: { type: Number, default: 0 },
+    reportMissingRequisites: { type: Boolean, default: false } // добавлено для settings
 });
 
 const communitySchema = new mongoose.Schema({
@@ -48,7 +49,7 @@ const communitySchema = new mongoose.Schema({
 });
 
 const communityJoinRequestSchema = new mongoose.Schema({
-    communityId: { type: String }, // или ObjectId, если связь
+    communityId: { type: String },
     userId: { type: Number },
     username: String,
     message: String,
@@ -61,11 +62,7 @@ const feedbackSchema = new mongoose.Schema({
     username: String,
     topic: { type: String, required: true },
     message: { type: String, required: true },
-    status: {
-        type: String,
-        enum: ['new', 'in_progress', 'resolved', 'rejected'], // добавлено 'rejected'
-        default: 'new'
-    },
+    status: { type: String, enum: ['new', 'in_progress', 'resolved', 'rejected'], default: 'new' },
     adminResponse: String,
     createdAt: { type: Date, default: Date.now },
     updatedAt: Date
@@ -85,7 +82,7 @@ const counterSchema = new mongoose.Schema({
 const withdrawalSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     amount: Number,
-    link: { type: String }, // ссылка на чек
+    link: { type: String },
     status: { type: String, enum: ['pending', 'completed'], default: 'pending' },
     messageId: Number,
     createdAt: { type: Date, default: Date.now },
@@ -110,14 +107,16 @@ const agencyClientSchema = new mongoose.Schema({
     currency: { type: String, default: 'RUB' },
     registeredAt: { type: Date, default: Date.now },
     lastActivity: Date,
-    invitedBy: { type: Number, default: null }, // <- изменено на Number
+    invitedBy: { type: Number, default: null },
     step: { type: String, default: null },
     tempCity: { type: String, default: null },
     lastMsgId: { type: Number, default: null },
     lastKeyboardMsgId: { type: Number, default: null },
     isRegistered: { type: Boolean, default: false },
+    cityChangeCount: { type: Number, default: 0 },
+    messageModelId: { type: String, default: null }
 });
-// Модель заказа
+
 const orderSchema = new mongoose.Schema({
     userId: { type: Number, required: true },
     modelId: Number,
@@ -126,13 +125,13 @@ const orderSchema = new mongoose.Schema({
     baseAmount: Number,
     extraTotal: Number,
     totalAmount: Number,
-    paymentMethod: String, // 'balance', 'card', 'sbp', 'crypto'
+    paymentMethod: String,
     status: { type: String, enum: ['pending', 'paid', 'completed', 'cancelled'], default: 'pending' },
     createdAt: { type: Date, default: Date.now },
     paidAt: Date,
-    managerNotified: { type: Boolean, default: false } // флаг для уведомления админа
+    managerNotified: { type: Boolean, default: false }
 });
-// Модель пополнения баланса
+
 const depositSchema = new mongoose.Schema({
     userId: Number,
     amount: Number,
@@ -142,12 +141,12 @@ const depositSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
     completedAt: Date
 });
-// Модель вывода средств
+
 const withdrawalRequestSchema = new mongoose.Schema({
     userId: Number,
     amount: Number,
     method: String,
-    details: Object, // реквизиты
+    details: Object,
     status: { type: String, enum: ['pending', 'completed', 'rejected'], default: 'pending' },
     createdAt: { type: Date, default: Date.now },
     processedAt: Date
@@ -176,14 +175,12 @@ const modelSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
-// Виртуальное поле price, которое всегда равно tariffs.1
 modelSchema.virtual('price').get(function() {
     return this.tariffs ? this.tariffs[1] : 0;
 });
-
-// Чтобы виртуальное поле включалось в JSON
 modelSchema.set('toJSON', { virtuals: true });
 modelSchema.set('toObject', { virtuals: true });
+
 const User = mongoose.model('User', userSchema);
 const Admin = mongoose.model('Admin', adminSchema);
 const Counter = mongoose.model('Counter', counterSchema);
@@ -207,6 +204,9 @@ module.exports = {
     Feedback,
     Community,
     CommunityJoinRequest,
-    AgencyClient, Order, Deposit, WithdrawalRequest,
+    AgencyClient,
+    Order,
+    Deposit,
+    WithdrawalRequest,
     Model
 };
